@@ -1,0 +1,278 @@
+\documentclass[a4paper, 12pt]{article}
+\usepackage{cmap}
+\usepackage[12pt]{extsizes}			
+\usepackage{mathtext} 				
+\usepackage[T2A]{fontenc}			
+\usepackage[utf8]{inputenc}			
+\usepackage[english,russian]{babel}
+\usepackage{setspace}
+\singlespacing
+\usepackage{amsmath,amsfonts,amssymb,amsthm,mathtools}
+\usepackage{fancyhdr}
+\usepackage{soulutf8}
+\usepackage{euscript}
+\usepackage{mathrsfs}
+\usepackage{listings}
+\pagestyle{fancy}
+\usepackage{indentfirst}
+\usepackage[top=10mm]{geometry}
+\rhead{}
+\lhead{}
+\renewcommand{\headrulewidth}{0mm}
+\usepackage{tocloft}
+\renewcommand{\cftsecleader}{\cftdotfill{\cftdotsep}}
+\usepackage[dvipsnames]{xcolor}
+
+\lstdefinestyle{mystyle}{ 
+	keywordstyle=\color{OliveGreen},
+	numberstyle=\tiny\color{Gray},
+	stringstyle=\color{BurntOrange},
+	basicstyle=\ttfamily\footnotesize,
+	breakatwhitespace=false,         
+	breaklines=true,                 
+	captionpos=b,                    
+	keepspaces=true,                 
+	numbers=left,                    
+	numbersep=5pt,                  
+	showspaces=false,                
+	showstringspaces=false,
+	showtabs=false,                  
+	tabsize=2
+}
+
+\lstset{style=mystyle}
+
+\begin{document}
+\thispagestyle{empty}	
+\begin{center}
+	Московский авиационный институт
+	
+	(Национальный исследовательский университет)
+	
+	Факультет "Информационные технологии и прикладная математика"
+	
+	Кафедра "Вычислительная математика и программирование"
+	
+\end{center}
+\vspace{40ex}
+\begin{center}
+	\textbf{\large{Лабораторная работа №1 по курсу\linebreak \textquotedblleft Операционные системы\textquotedblright}}
+\end{center}
+\vspace{35ex}
+\begin{flushright}
+	\textit{Студент: } Живалев Е.А.
+	
+	\vspace{2ex}
+	\textit{Группа: } М8О-206Б
+	
+	\vspace{2ex}
+	\textit{Преподаватель: } Соколов А.А.
+	
+	
+	\vspace{2ex}
+	\textit{Оценка: } \underline{\quad\quad\quad\quad\quad\quad}
+	
+	 \vspace{2ex}
+	\textit{Дата: } \underline{\quad\quad\quad\quad\quad\quad}
+	
+	\vspace{2ex}
+	\textit{Подпись: } \underline{\quad\quad\quad\quad\quad\quad}
+	
+\end{flushright}
+
+\vspace{5ex}
+
+\begin{vfill}
+	\begin{center}
+		Москва, 2019
+	\end{center}	
+\end{vfill}
+\newpage
+
+\section{Задание}
+
+Продемонстрировать работу с утилитой strace на примере одной из лабораторных работ.
+
+Программе на вход поступает число n - количество процессов, которое будет создано в ходе выполнения и программы, и n названий файлов, в которые эти процессы будут записывать данные. Родительский процесс создает n дочерних процессов, которым поочередно передает символы с входной строки. Дочерний процесс записывает полученные символ в переданный ему файл.
+
+В ходе выполнения лабораторной работы были использованы следующие системные вызовы:
+
+\begin{itemize}
+	\item open - открытие файла и получение его дескриптора
+	\item read - использовался для чтения данных с входной строки
+	\item sem\_open - создание семафора или открытие ранее созданного
+	\item sem\_post - увеличение счетчика семафора
+	\item sem\_wait - уменьшение счетчика семафора
+	\item fork - создание дочерних процессов
+	\item mmap - отображение файла на память
+\end{itemize}
+\section{Описание работы программы}
+
+С помощью функции readLine, которая, используя read считывает одну строку с входной строки, программа получает количество процессов(число n), которые необходимо создать и имена файлов, в которые должна производиться запись. Затем создаётся n пайпов и n процессов. Затем в родительском процессе в цикле с условием, что возвращенное функцией read число больше 0 происходит запись считанного символа в определенный элемент массива char, который был записан в файл, отображенный в память, и увеличивает значение семафора, связанного с чтением. В то же время дочерний процесс считывает символ и записывает его в свой файл, а также увеличивает значение семафора, связанного с записью символов, тем самым давая родительскому процессу понять, что можно записать новый символ.
+
+\newpage
+
+\section{Исходный код}
+
+\textbf{\large{main.c}}
+\lstinputlisting[language=C]{../src/main.c}
+\newpage
+\section{Консоль}
+
+\begin{verbatim}
+	qelderdelta@qelderdelta-UX331UA:~/Study/OS/os_lab_4/src$ ./a.out
+	3
+	1.txt
+	2.txt
+	3.txt
+	ttthhhiiisss   ssshhhooouuulllddd   bbbeee   iiinnn   fffiiillleee123                            
+	qelderdelta@qelderdelta-UX331UA:~/Study/OS/os_lab_4/src$ cat 1.txt
+	this should be in file1
+	qelderdelta@qelderdelta-UX331UA:~/Study/OS/os_lab_4/src$ cat 2.txt
+	this should be in file2
+	qelderdelta@qelderdelta-UX331UA:~/Study/OS/os_lab_4/src$ cat 3.txt
+	this should be in file3
+	
+	
+	qelderdelta@qelderdelta-UX331UA:~/Study/OS/os_lab_1/src$ strace ./a.out
+	execve("./a.out", ["./a.out"], 0x7ffda39b0c70 /* 54 vars */) = 0
+	brk(NULL)                               = 0x55f985fda000
+	access("/etc/ld.so.preload", R\_OK)      = -1 ENOENT (Нет такого файла или каталога)
+	openat(AT\_FDCWD, "/etc/ld.so.cache", O\_RDONLY|O\_CLOEXEC) = 3
+	fstat(3, \{st\_mode=S\_IFREG|0644, st\_size=142252, ...\}) = 0
+	mmap(NULL, 142252, PROT\_READ, MAP\_PRIVATE, 3, 0) = 0x7fe4d59cf000
+	close(3)                                = 0
+	openat(AT\_FDCWD, "/lib/x86\_64-linux-gnu/libpthread.so.0", O\_RDONLY|O\_CLOEXEC) = 3
+	read(3, "\textbackslash\{\}177ELF\textbackslash\{\}2\textbackslash\{\}1\textbackslash\{\}1\textbackslash\{\}3\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}3\textbackslash\{\}0>\textbackslash\{\}0\textbackslash\{\}1\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}200|\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0"..., 832) = 832
+	fstat(3, \{st\_mode=S\_IFREG|0755, st\_size=149840, ...\}) = 0
+	mmap(NULL, 8192, PROT\_READ|PROT\_WRITE, MAP\_PRIVATE|MAP\_ANONYMOUS, -1, 0) = 0x7fe4d59cd000
+	mmap(NULL, 132288, PROT\_READ, MAP\_PRIVATE|MAP\_DENYWRITE, 3, 0) = 0x7fe4d59ac000
+	mmap(0x7fe4d59b3000, 61440, PROT\_READ|PROT\_EXEC, MAP\_PRIVATE|MAP\_FIXED|MAP\_DENYWRITE, 3, 0x7000) = 0x7fe4d59b3000
+	mmap(0x7fe4d59c2000, 20480, PROT\_READ, MAP\_PRIVATE|MAP\_FIXED|MAP\_DENYWRITE, 3, 0x16000) = 0x7fe4d59c2000
+	mmap(0x7fe4d59c7000, 8192, PROT\_READ|PROT\_WRITE, MAP\_PRIVATE|MAP\_FIXED|MAP\_DENYWRITE, 3, 0x1a000) = 0x7fe4d59c7000
+	mmap(0x7fe4d59c9000, 13504, PROT\_READ|PROT\_WRITE, MAP\_PRIVATE|MAP\_FIXED|MAP\_ANONYMOUS, -1, 0) = 0x7fe4d59c9000
+	close(3)                                = 0
+	openat(AT\_FDCWD, "/lib/x86\_64-linux-gnu/libc.so.6", O\_RDONLY|O\_CLOEXEC) = 3
+	read(3, "\textbackslash\{\}177ELF\textbackslash\{\}2\textbackslash\{\}1\textbackslash\{\}1\textbackslash\{\}3\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}3\textbackslash\{\}0>\textbackslash\{\}0\textbackslash\{\}1\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}200l\textbackslash\{\}2\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0"..., 832) = 832
+	fstat(3, \{st\_mode=S\_IFREG|0755, st\_size=2000480, ...\}) = 0
+	mmap(NULL, 2008696, PROT\_READ, MAP\_PRIVATE|MAP\_DENYWRITE, 3, 0) = 0x7fe4d57c1000
+	mmap(0x7fe4d57e6000, 1519616, PROT\_READ|PROT\_EXEC, MAP\_PRIVATE|MAP\_FIXED|MAP\_DENYWRITE, 3, 0x25000) = 0x7fe4d57e6000
+	mmap(0x7fe4d5959000, 299008, PROT\_READ, MAP\_PRIVATE|MAP\_FIXED|MAP\_DENYWRITE, 3, 0x198000) = 0x7fe4d5959000
+	mmap(0x7fe4d59a2000, 24576, PROT\_READ|PROT\_WRITE, MAP\_PRIVATE|MAP\_FIXED|MAP\_DENYWRITE, 3, 0x1e0000) = 0x7fe4d59a2000
+	mmap(0x7fe4d59a8000, 13944, PROT\_READ|PROT\_WRITE, MAP\_PRIVATE|MAP\_FIXED|MAP\_ANONYMOUS, -1, 0) = 0x7fe4d59a8000
+	close(3)                                = 0
+	mmap(NULL, 12288, PROT\_READ|PROT\_WRITE, MAP\_PRIVATE|MAP\_ANONYMOUS, -1, 0) = 0x7fe4d57be000
+	arch\_prctl(ARCH\_SET\_FS, 0x7fe4d57be740) = 0
+	mprotect(0x7fe4d59a2000, 12288, PROT\_READ) = 0
+	mprotect(0x7fe4d59c7000, 4096, PROT\_READ) = 0
+	mprotect(0x55f9844ee000, 4096, PROT\_READ) = 0
+	mprotect(0x7fe4d5a1c000, 4096, PROT\_READ) = 0
+	munmap(0x7fe4d59cf000, 142252)          = 0
+	set\_tid\_address(0x7fe4d57bea10)         = 3655
+	set\_robust\_list(0x7fe4d57bea20, 24)     = 0
+	rt\_sigaction(SIGRTMIN, \{sa\_handler=0x7fe4d59b36c0, sa\_mask=[], sa\_flags=SA\_RESTORER|SA\_SIGINFO, sa\_restorer=0x7fe4d59bff40\}, NULL, 8) = 0
+	rt\_sigaction(SIGRT\_1, \{sa\_handler=0x7fe4d59b3760, sa\_mask=[], sa\_flags=SA\_RESTORER|SA\_RESTART|SA\_SIGINFO, sa\_restorer=0x7fe4d59bff40\}, NULL, 8) = 0
+	rt\_sigprocmask(SIG\_UNBLOCK, [RTMIN RT\_1], NULL, 8) = 0
+	prlimit64(0, RLIMIT\_STACK, NULL, \{rlim\_cur=8192*1024, rlim\_max=RLIM64\_INFINITY\}) = 0
+	read(0, 2
+	"2", 1)                         = 1
+	read(0, "\textbackslash\{\}n", 1)                        = 1
+	brk(NULL)                               = 0x55f985fda000
+	brk(0x55f985ffb000)                     = 0x55f985ffb000
+	read(0, 1.txt
+	"1", 1)                         = 1
+	read(0, ".", 1)                         = 1
+	read(0, "t", 1)                         = 1
+	read(0, "x", 1)                         = 1
+	read(0, "t", 1)                         = 1
+	read(0, "\textbackslash\{\}n", 1)                        = 1
+	read(0, 2.txt
+	"2", 1)                         = 1
+	read(0, ".", 1)                         = 1
+	read(0, "t", 1)                         = 1
+	read(0, "x", 1)                         = 1
+	read(0, "t", 1)                         = 1
+	read(0, "\textbackslash\{\}n", 1)                        = 1
+	statfs("/dev/shm/", \{f\_type=TMPFS\_MAGIC, f\_bsize=4096, f\_blocks=1001828, f\_bfree=992030, f\_bavail=992030, f\_files=1001828, f\_ffree=1001776, f\_fsid=\{val=[0, 0]\}, f\_namelen=255, f\_frsize=4096, f\_flags=ST\_VALID|ST\_NOSUID|ST\_NODEV\}) = 0
+	futex(0x7fe4d59cc3b0, FUTEX\_WAKE\_PRIVATE, 2147483647) = 0
+	openat(AT\_FDCWD, "/dev/shm/sem.semaphore0input", O\_RDWR|O\_NOFOLLOW) = -1 ENOENT (Нет такого файла или каталога)
+	getpid()                                = 3655
+	lstat("/dev/shm/iHu5Yh", 0x7ffd496ec340) = -1 ENOENT (Нет такого файла или каталога)
+	openat(AT\_FDCWD, "/dev/shm/iHu5Yh", O\_RDWR|O\_CREAT|O\_EXCL, 01411) = 3
+	write(3, "\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}200\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0", 32) = 32
+	mmap(NULL, 32, PROT\_READ|PROT\_WRITE, MAP\_SHARED, 3, 0) = 0x7fe4d59f1000
+	link("/dev/shm/iHu5Yh", "/dev/shm/sem.semaphore0input") = 0
+	fstat(3, \{st\_mode=S\_IFREG|S\_ISVTX|0411, st\_size=32, ...\}) = 0
+	unlink("/dev/shm/iHu5Yh")               = 0
+	close(3)                                = 0
+	openat(AT\_FDCWD, "/dev/shm/sem.semaphore0output", O\_RDWR|O\_NOFOLLOW) = -1 ENOENT (Нет такого файла или каталога)
+	getpid()                                = 3655
+	lstat("/dev/shm/CYRcbL", 0x7ffd496ec340) = -1 ENOENT (Нет такого файла или каталога)
+	openat(AT\_FDCWD, "/dev/shm/CYRcbL", O\_RDWR|O\_CREAT|O\_EXCL, 01411) = 3
+	write(3, "\textbackslash\{\}1\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}200\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0", 32) = 32
+	mmap(NULL, 32, PROT\_READ|PROT\_WRITE, MAP\_SHARED, 3, 0) = 0x7fe4d59f0000
+	link("/dev/shm/CYRcbL", "/dev/shm/sem.semaphore0output") = 0
+	fstat(3, \{st\_mode=S\_IFREG|S\_ISVTX|0411, st\_size=32, ...\}) = 0
+	unlink("/dev/shm/CYRcbL")               = 0
+	close(3)                                = 0
+	unlink("/dev/shm/sem.semaphore0input")  = 0
+	unlink("/dev/shm/sem.semaphore0output") = 0
+	openat(AT\_FDCWD, "/dev/shm/sem.semaphore1input", O\_RDWR|O\_NOFOLLOW) = -1 ENOENT (Нет такого файла или каталога)
+	getpid()                                = 3655
+	lstat("/dev/shm/U0Srne", 0x7ffd496ec340) = -1 ENOENT (Нет такого файла или каталога)
+	openat(AT\_FDCWD, "/dev/shm/U0Srne", O\_RDWR|O\_CREAT|O\_EXCL, 01411) = 3
+	write(3, "\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}200\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0", 32) = 32
+	mmap(NULL, 32, PROT\_READ|PROT\_WRITE, MAP\_SHARED, 3, 0) = 0x7fe4d59ef000
+	link("/dev/shm/U0Srne", "/dev/shm/sem.semaphore1input") = 0
+	fstat(3, \{st\_mode=S\_IFREG|S\_ISVTX|0411, st\_size=32, ...\}) = 0
+	unlink("/dev/shm/U0Srne")               = 0
+	close(3)                                = 0
+	openat(AT\_FDCWD, "/dev/shm/sem.semaphore1output", O\_RDWR|O\_NOFOLLOW) = -1 ENOENT (Нет такого файла или каталога)
+	getpid()                                = 3655
+	lstat("/dev/shm/rdhNzH", 0x7ffd496ec340) = -1 ENOENT (Нет такого файла или каталога)
+	openat(AT\_FDCWD, "/dev/shm/rdhNzH", O\_RDWR|O\_CREAT|O\_EXCL, 01411) = 3
+	write(3, "\textbackslash\{\}1\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}200\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0\textbackslash\{\}0", 32) = 32
+	mmap(NULL, 32, PROT\_READ|PROT\_WRITE, MAP\_SHARED, 3, 0) = 0x7fe4d59ee000
+	link("/dev/shm/rdhNzH", "/dev/shm/sem.semaphore1output") = 0
+	fstat(3, \{st\_mode=S\_IFREG|S\_ISVTX|0411, st\_size=32, ...\}) = 0
+	unlink("/dev/shm/rdhNzH")               = 0
+	close(3)                                = 0
+	unlink("/dev/shm/sem.semaphore1input")  = 0
+	unlink("/dev/shm/sem.semaphore1output") = 0
+	getpid()                                = 3655
+	openat(AT\_FDCWD, "/tmp/tmp\_file.uZNfMa", O\_RDWR|O\_CREAT|O\_EXCL, 0600) = 3
+	write(3, "   ", 3)                      = 3
+	mmap(NULL, 3, PROT\_READ|PROT\_WRITE, MAP\_SHARED, 3, 0) = 0x7fe4d59ed000
+	clone(child\_stack=NULL, flags=CLONE\_CHILD\_CLEARTID|CLONE\_CHILD\_SETTID|SIGCHLD, child\_tidptr=0x7fe4d57bea10) = 3656
+	clone(child\_stack=NULL, flags=CLONE\_CHILD\_CLEARTID|CLONE\_CHILD\_SETTID|SIGCHLD, child\_tidptr=0x7fe4d57bea10) = 3657
+	read(0, xxxddd
+	"x", 1)                         = 1
+	futex(0x7fe4d59f1000, FUTEX\_WAKE, 1)    = 1
+	read(0, "x", 1)                         = 1
+	futex(0x7fe4d59ef000, FUTEX\_WAKE, 1)    = 1
+	read(0, "x", 1)                         = 1
+	futex(0x7fe4d59f1000, FUTEX\_WAKE, 1)    = 1
+	read(0, "d", 1)                         = 1
+	futex(0x7fe4d59ef000, FUTEX\_WAKE, 1)    = 1
+	read(0, "d", 1)                         = 1
+	futex(0x7fe4d59f1000, FUTEX\_WAKE, 1)    = 1
+	read(0, "d", 1)                         = 1
+	futex(0x7fe4d59ef000, FUTEX\_WAKE, 1)    = 1
+	read(0, "\textbackslash\{\}n", 1)                        = 1
+	futex(0x7fe4d59f1000, FUTEX\_WAKE, 1)    = 1
+	read(0, "", 1)                          = 0
+	futex(0x7fe4d59f1000, FUTEX\_WAKE, 1)    = 1
+	futex(0x7fe4d59ef000, FUTEX\_WAKE, 1)    = 1
+	--- SIGCHLD \{si\_signo=SIGCHLD, si\_code=CLD\_EXITED, si\_pid=3656, si\_uid=1000, si\_status=0, si\_utime=0, si\_stime=0\} ---
+	close(3)                                = 0
+	munmap(0x7fe4d59ed000, 3)               = 0
+	--- SIGCHLD \{si\_signo=SIGCHLD, si\_code=CLD\_EXITED, si\_pid=3657, si\_uid=1000, si\_status=0, si\_utime=0, si\_stime=0\} ---
+	exit\_group(0)                           = ?
+	+++ exited with 0 +++
+
+\end{verbatim}
+\newpage
+\section{Выводы}
+
+В ходе выполнения лабораторной работы я в очередной раз воспользовался утилитой strace для того, чтобы наглядно увидеть какие системные вызовы были совершены в ходе работы моей программы.
+\end{document}
